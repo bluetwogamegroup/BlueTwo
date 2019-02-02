@@ -170,7 +170,15 @@ GameEngine.prototype.startInput = function () {
     this.ctx.canvas.addEventListener("click", function (e) {
         that.click = getXandY(e);
     }, false);
-
+	this.ctx.canvas.addEventListener("keydown", function (e) {
+		if(e.keyCode ===  39 ) {
+			console.log('right was pressed' );
+			that.moving = true;
+			console.log(that.moving);
+		}
+		e.preventDefault();
+	}, false);
+	
     this.ctx.canvas.addEventListener("mousemove", function (e) {
         that.mouse = getXandY(e);
     }, false);
@@ -185,8 +193,8 @@ GameEngine.prototype.startInput = function () {
     }, false);
 
     this.ctx.canvas.addEventListener("keydown", function (e) {
-		if (e.keyCode === 87 ) that.space = true;
-        //if (String.fromCharCode(e.which) === ' ') that.space = true;
+		if (e.keyCode === 32 ) that.space = true;
+        //if (String.fromCharCode(e.which) === ' ' ) that.space = true;
         e.preventDefault();
     }, false);
 
@@ -233,6 +241,7 @@ GameEngine.prototype.loop = function () {
     this.update();
     this.draw();
     this.space = null;
+	this.moving = null;
     this.click = null;
     this.wheel = null;
     this.over = null;
@@ -300,7 +309,9 @@ function BoundingBox(x, y, width, height) {
 
 BoundingBox.prototype.collide = function (oth) {
     if (this.right > oth.left && this.left < oth.right && this.top < oth.bottom && this.bottom > oth.top) return true;
+	console.log("Colison ");
     return false;
+	
 }
 
 function PlayGame(game, x, y) {
@@ -349,7 +360,11 @@ Platform.prototype.reset = function () {
 }
 Platform.prototype.update = function () {
     if (!this.game.running) return;
+
   //  this.x -= 400 * this.game.clockTick; //stop time so that platofrm arent coming towards us
+
+    
+
     if (this.x + this.width < 0) this.x += 3200;
     this.boundingbox = new BoundingBox(this.x, this.y, this.width, this.height);
     Entity.prototype.update.call(this);
@@ -372,15 +387,20 @@ function Unicorn(game) {
     this.animation = new Animation(ASSET_MANAGER.getAsset("./img/IDLE.png"), 0, 0, 90, 45, .2, 2, true, false);
     this.jumpAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 8, true, false);
     this.fallAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 8, true, false);
+
 	this.idleAnimation = new Animation(ASSET_MANAGER.getAsset("./img/IDLE.png"), 0, 0, 90, 45, 0.2, 2, true, false);
+
+	this.moveAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 8, true, false);
+
     this.jumping = false;
     this.lives = 3;
     game.lives.innerHTML = "Lives: " + this.lives;
+	this.moving = false;
     this.falling = false;
-    this.boxes = false;
+    this.boxes = true;
     this.lastY = this.y;
     this.platform = game.platforms[0];
-    this.jumpHeight = 400;
+    this.jumpHeight = 200;
 										//was 25                                            was 40                    was 20
     this.boundingbox = new BoundingBox(this.x , this.y, this.animation.frameWidth , this.animation.frameHeight );
 
@@ -412,6 +432,22 @@ Unicorn.prototype.update = function () {
             this.game.reset();
             return;
         }
+		if(this.game.moving){
+			this.moving = true;
+			this.base = this.y;
+		}
+		if(this.moving){
+			console.log(this.moving);
+			console.log('right was recived');
+			
+			this.lastBottom = this.boundingbox.bottom;
+  
+            this.boundingbox = new BoundingBox(this.x, this.y , this.moveAnimation.frameWidth , this.moveAnimation.frameHeight  );
+			this.y = this.base;
+			this.x += 3 //* (this.game.clockTick / 10000 );
+			//this.moving = false;
+			this.base = 466;
+		}
         if (this.game.space && !this.jumping && !this.falling) {
             this.jumping = true;
             this.base = this.y;
@@ -419,20 +455,22 @@ Unicorn.prototype.update = function () {
         if (this.jumping) {
             var height = 0;
             var duration = this.jumpAnimation.elapsedTime + this.game.clockTick;
-            if (duration > this.jumpAnimation.totalTime ) duration = this.jumpAnimation.totalTime - duration;
+            if (duration > this.jumpAnimation.totalTime / 2) duration = this.jumpAnimation.totalTime - duration;
             duration = duration / this.jumpAnimation.totalTime;
 
             // quadratic jump
             height = (4 * duration - 4 * duration * duration) * this.jumpHeight;
             this.lastBottom = this.boundingbox.bottom;
             this.y = this.base - height;
+
             this.boundingbox = new BoundingBox(this.x , this.y , this.jumpAnimation.frameWidth , this.jumpAnimation.frameHeight);
+
 
             for (var i = 0; i < this.game.platforms.length; i++) {
                 var pf = this.game.platforms[i];
                 if (this.boundingbox.collide(pf.boundingbox) && this.lastBottom < pf.boundingbox.top) {
                     this.jumping = false;
-                    this.y = pf.boundingbox.top - this.animation.frameHeight ;
+                    this.y = pf.boundingbox.top - this.animation.frameHeight  ;
                     this.platform = pf;
                     this.jumpAnimation.elapsedTime = 0;
                 }
@@ -447,15 +485,16 @@ Unicorn.prototype.update = function () {
                 var pf = this.game.platforms[i];
                 if (this.boundingbox.collide(pf.boundingbox) && this.lastBottom < pf.boundingbox.top) {
                     this.falling = false;
-                    this.y = pf.boundingbox.top - this.animation.frameHeight ;
+                    this.y = pf.boundingbox.top - this.animation.frameHeight;
                     this.platform = pf;
                     this.fallAnimation.elapsedTime = 0;
                 }
             }
 
         }
+		//This is for Idle
         if (!this.jumping && !this.falling) {
-            this.boundingbox = new BoundingBox(this.x , this.y, this.animation.frameWidth , this.animation.frameHeight );
+            this.boundingbox = new BoundingBox(this.x , this.y  , this.animation.frameWidth, this.animation.frameHeight );
             if (this.boundingbox.left > this.platform.boundingbox.right) this.falling = true;
         }
         for (var i = 0; i < this.game.platforms.length; i++) {
@@ -469,16 +508,32 @@ Unicorn.prototype.update = function () {
     Entity.prototype.update.call(this);
 }
 
+
 Unicorn.prototype.draw = function (ctx) {
     if (this.dead || !this.game.running) return;
-    if (this.jumping) {
-        if (this.boxes) {
+	if(this.moving){
+		 if (this.boxes) {
             ctx.strokeStyle = "red";
             ctx.strokeRect(this.x , this.y , this.jumpAnimation.frameWidth, this.jumpAnimation.frameHeight);
             ctx.strokeStyle = "green";
-            ctx.strokeRect(this.boundingbox.x, this.boundingbox.y, this.boundingbox.width, this.boundingbox.height);
+            ctx.strokeRect(this.boundingbox.x , this.boundingbox.y , this.boundingbox.width , this.boundingbox.height );
+			
+		 }
+		                        console.log(this.x);
+		                        console.log(this.y);
+		 this.moveAnimation.drawFrame(this.game.clockTick, ctx, this.x , this.y );
+		 this.moving = false;
+	}
+    else if (this.jumping) {
+		                         console.log(this.x);
+		                         console.log(this.y);
+        if (this.boxes) {
+            ctx.strokeStyle = "red";
+            ctx.strokeRect(this.x , this.y , this.jumpAnimation.frameWidth, this.jumpAnimation.frameHeight );
+            ctx.strokeStyle = "green";
+            ctx.strokeRect(this.boundingbox.x  , this.boundingbox.y , this.boundingbox.width , this.boundingbox.height );
         }
-        this.jumpAnimation.drawFrame(this.game.clockTick, ctx, this.x , this.y );
+        this.jumpAnimation.drawFrame(this.game.clockTick, ctx, this.x, this.y);
         if (this.jumpAnimation.isDone()) {
             this.jumpAnimation.elapsedTime = 0;
             this.jumping = false;
@@ -488,20 +543,21 @@ Unicorn.prototype.draw = function (ctx) {
     else if (this.falling) {
         if (this.boxes) {
             ctx.strokeStyle = "red";
-            ctx.strokeRect(this.x , this.y , this.fallAnimation.frameWidth, this.fallAnimation.frameHeight);
+            ctx.strokeRect(this.x , this.y , this.jumpAnimation.frameWidth, this.jumpAnimation.frameHeight);
             ctx.strokeStyle = "green";
-            ctx.strokeRect(this.boundingbox.x, this.boundingbox.y, this.boundingbox.width, this.boundingbox.height);
+            ctx.strokeRect(this.boundingbox.x , this.boundingbox.y , this.boundingbox.width , this.boundingbox.height );
         }
         this.fallAnimation.drawFrame(this.game.clockTick, ctx, this.x , this.y );
     }
+
     else {
         if (this.boxes) {
             ctx.strokeStyle = "red";
-            ctx.strokeRect(this.x, this.y, this.animation.frameWidth, this.animation.frameHeight);
+            ctx.strokeRect(this.x , this.y , this.jumpAnimation.frameWidth, this.jumpAnimation.frameHeight );
             ctx.strokeStyle = "green";
-            ctx.strokeRect(this.boundingbox.x, this.boundingbox.y, this.boundingbox.width, this.boundingbox.height);
+            ctx.strokeRect(this.boundingbox.x , this.boundingbox.y , this.boundingbox.width , this.boundingbox.height );
         }
-        this.animation.drawFrame(this.game.clockTick, ctx, this.x, this.y);
+        this.animation.drawFrame(this.game.clockTick, ctx, this.x, this.y );
     }
 }
 
@@ -518,13 +574,13 @@ ASSET_MANAGER.downloadAll(function () {
 
     var gameEngine = new GameEngine();
     var platforms = [];
-    var pf = new Platform(gameEngine, 0, 500, 1800, 100);
+    var pf = new Platform(gameEngine, 0, 446, 1800, 100);
     gameEngine.addEntity(pf);
     platforms.push(pf);
-    pf = new Platform(gameEngine, 1200, 350, 600, 100);
+    pf = new Platform(gameEngine, 300, 350, 600, 50);
     gameEngine.addEntity(pf);
     platforms.push(pf);
-    pf = new Platform(gameEngine, 2050, 250, 1800, 100);
+    pf = new Platform(gameEngine, 500, 200, 200, 50);
     gameEngine.addEntity(pf);
     platforms.push(pf);
 	pf = new Platform(gameEngine, 80, 100, 80, 15);
