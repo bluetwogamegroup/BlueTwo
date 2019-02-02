@@ -349,7 +349,7 @@ Platform.prototype.reset = function () {
 }
 Platform.prototype.update = function () {
     if (!this.game.running) return;
-    this.x -= 400 * this.game.clockTick;
+  //  this.x -= 400 * this.game.clockTick; //stop time so that platofrm arent coming towards us
     if (this.x + this.width < 0) this.x += 3200;
     this.boundingbox = new BoundingBox(this.x, this.y, this.width, this.height);
     Entity.prototype.update.call(this);
@@ -362,12 +362,6 @@ Platform.prototype.draw = function (ctx) {
     grad = ctx.createLinearGradient(0, this.y, 0, this.y + this.height);
     grad.addColorStop(0, 'red');
 	grad.addColorStop(1/2, 'black');
-    /* grad.addColorStop(1 / 6, 'orange');
-    grad.addColorStop(2 / 6, 'yellow');
-    grad.addColorStop(3 / 6, 'green')
-    grad.addColorStop(4 / 6, 'aqua');
-    grad.addColorStop(5 / 6, 'blue');
-    grad.addColorStop(1, 'purple'); */
     ctx.fillStyle = grad;
 
 
@@ -375,9 +369,10 @@ Platform.prototype.draw = function (ctx) {
 }
 
 function Unicorn(game) {
-    this.animation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, .2, 8, true, false);
+    this.animation = new Animation(ASSET_MANAGER.getAsset("./img/IDLE.png"), 0, 0, 90, 45, .2, 2, true, false);
     this.jumpAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 8, true, false);
     this.fallAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 8, true, false);
+	this.idleAnimation = new Animation(ASSET_MANAGER.getAsset("./img/IDLE.png"), 0, 0, 90, 45, 0.2, 2, true, false);
     this.jumping = false;
     this.lives = 3;
     game.lives.innerHTML = "Lives: " + this.lives;
@@ -394,6 +389,8 @@ function Unicorn(game) {
 
 Unicorn.prototype = new Entity();
 Unicorn.prototype.constructor = Unicorn;
+
+
 
 Unicorn.prototype.reset = function () {
     this.jumping = false;
@@ -429,7 +426,7 @@ Unicorn.prototype.update = function () {
             height = (4 * duration - 4 * duration * duration) * this.jumpHeight;
             this.lastBottom = this.boundingbox.bottom;
             this.y = this.base - height;
-            this.boundingbox = new BoundingBox(this.x , this.y , this.jumpAnimation.frameWidth , this.jumpAnimation.frameHeight  );
+            this.boundingbox = new BoundingBox(this.x , this.y , this.jumpAnimation.frameWidth , this.jumpAnimation.frameHeight);
 
             for (var i = 0; i < this.game.platforms.length; i++) {
                 var pf = this.game.platforms[i];
@@ -511,7 +508,7 @@ Unicorn.prototype.draw = function (ctx) {
 // the "main" code begins here
 
 var ASSET_MANAGER = new AssetManager();
-ASSET_MANAGER.queueDownload("./img/Haru'unRunningsword2.png");
+ASSET_MANAGER.queueDownload("./img/IDLE.png");
 
 ASSET_MANAGER.downloadAll(function () {
     console.log("starting up da sheild");
@@ -528,6 +525,12 @@ ASSET_MANAGER.downloadAll(function () {
     gameEngine.addEntity(pf);
     platforms.push(pf);
     pf = new Platform(gameEngine, 2050, 250, 1800, 100);
+    gameEngine.addEntity(pf);
+    platforms.push(pf);
+	pf = new Platform(gameEngine, 80, 100, 80, 15);
+    gameEngine.addEntity(pf);
+    platforms.push(pf);
+	pf = new Platform(gameEngine, 350, 300, 80, 15);
     gameEngine.addEntity(pf);
     platforms.push(pf);
 
