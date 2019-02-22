@@ -1,6 +1,11 @@
 // This game shell was happily copied from Googler Seth Ladd's "Bad Aliens" game and his Google IO talk in 2011
 // This starter code was taken from Chris Marriot's github with permission
 
+
+//If jump animation is over and no collision then keep falling until colission.
+
+//****Software and automation engineer at Diamond Foundry,  William Grabill: Helped with logic of camera
+
 window.requestAnimFrame = (function () {
     return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
@@ -130,6 +135,9 @@ function GameEngine() {
     this.wheel = null;
     this.surfaceWidth = null;
     this.surfaceHeight = null;
+	
+	//-------------------------Done by Luka-----------------------------------------------------------
+	this.titleScreen = null;
 }
 
 GameEngine.prototype.init = function (ctx) {
@@ -169,13 +177,31 @@ GameEngine.prototype.startInput = function () {
 
     this.ctx.canvas.addEventListener("click", function (e) {
         that.click = getXandY(e);
+		//-------------------------Done by Luka-----------------------------------------------------------
+		console.log(that.click);																	//||||
+		if(!that.titleScreen.removeFromWorld) {														  //||	
+			if ( that.click.x >= 9 && that.click.x <= 16 && that.click.y >= 7 && that.click.y <= 10){ //||
+				that.titleScreen.removefromWorld = true;											  //||
+			}																						  //||
+		}																							  //||
+		//------------------------------------------------------------------------------------------------
     }, false);
 	this.ctx.canvas.addEventListener("keydown", function (e) {
 		if(e.keyCode ===  39 ) {
 			console.log('right was pressed' );
-			that.moving = true;
-			console.log(that.moving);
+			that.movingRight = true;
+			console.log(that.movingRight);
 		}
+		if(e.keyCode ===  37 ) {
+			console.log('left was pressed' );
+			that.movingLeft = true;
+			console.log(that.movingLeft);
+		}
+		
+		/* else{
+			that.movingLeft = false;
+			that.movingRight = false;
+		} */
 		e.preventDefault();
 	}, false);
 	
@@ -193,7 +219,9 @@ GameEngine.prototype.startInput = function () {
     }, false);
 
     this.ctx.canvas.addEventListener("keydown", function (e) {
-		if (e.keyCode === 32 ) that.space = true;
+		if (e.keyCode === 32 ) {
+			that.space = true;
+		}
         //if (String.fromCharCode(e.which) === ' ' ) that.space = true;
         e.preventDefault();
     }, false);
@@ -241,7 +269,8 @@ GameEngine.prototype.loop = function () {
     this.update();
     this.draw();
     this.space = null;
-	this.moving = null;
+	this.movingRight = null;
+	this.movingLeft = null;
     this.click = null;
     this.wheel = null;
     this.over = null;
@@ -252,6 +281,8 @@ GameEngine.prototype.reset = function () {
         this.entities[i].reset();
     }
 }
+
+
 
 function Entity(game, x, y) {
     this.game = game;
@@ -309,10 +340,13 @@ function BoundingBox(x, y, width, height) {
 
 BoundingBox.prototype.collide = function (oth) {
     if (this.right > oth.left && this.left < oth.right && this.top < oth.bottom && this.bottom > oth.top) return true;
+	//if (this.bottom < oth.top ) return true;
 	console.log("Colison ");
     return false;
 	
 }
+
+////ATTACK FUNCTION GOES HERE
 
 function PlayGame(game, x, y) {
     Entity.call(this, game, x, y);
@@ -325,7 +359,7 @@ PlayGame.prototype.reset = function () {
     this.game.running = false;
 }
 PlayGame.prototype.update = function () {
-    if (this.game.click && this.game.unicorn.lives > 0) this.game.running = true;
+    if (this.game.click && this.game.theGuy.lives > 0) this.game.running = true;
 }
 
 PlayGame.prototype.draw = function (ctx) {
@@ -333,13 +367,36 @@ PlayGame.prototype.draw = function (ctx) {
         ctx.font = "24pt Impact";
         ctx.fillStyle = "orange";
         if (this.game.mouse) { ctx.fillStyle = "Blue"; }
-        if (this.game.unicorn.lives > 0) {
+        if (this.game.theGuy.lives > 0) {
             ctx.fillText("Click to Play!", this.x, this.y);
         }
         else {
-            ctx.fillText("Game Over Man!", this.x-30, this.y);
+            ctx.fillText("Game Over !", this.x-30, this.y);
         }
     }
+}
+
+
+function TitleScreen(game) {
+	Entity.call(this, game, 0, 0);
+
+}
+//-------------------------Done by Luka-----------------------------------------------------------
+TitleScreen.prototype = new Entity();
+TitleScreen.prototype.constructor = TitleScreen;
+//-------------------------Done by Luka-----------------------------------------------------------
+TitleScreen.prototype.draw = function(ctx) {
+	
+	if(!this.game.running){
+		ctx.drawImage(ASSET_MANAGER.getAsset("./img/TitleScreen.png"), 0, 0);
+	}
+
+}
+//-------------------------Done by Luka-----------------------------------------------------------
+TitleScreen.prototype.update = function() {
+	
+
+
 }
 
 function Platform(game, x, y, width, height) {
@@ -371,8 +428,8 @@ Platform.prototype.draw = function (ctx) {
     var offset = 0;
 
     grad = ctx.createLinearGradient(0, this.y, 0, this.y + this.height);
-    grad.addColorStop(0, 'red');
-	grad.addColorStop(1/2, 'black');
+    grad.addColorStop(0, 'black');
+	grad.addColorStop(1/2, 'gray');
     /* grad.addColorStop(1 / 6, 'orange');
     grad.addColorStop(2 / 6, 'yellow');
     grad.addColorStop(3 / 6, 'green')
@@ -385,30 +442,34 @@ Platform.prototype.draw = function (ctx) {
     ctx.fillRect(this.x, this.y, this.width, this.height);
 }
 
-function Unicorn(game) {
-    this.animation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, .2, 8, true, false);
-    this.jumpAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 8, true, false);
+function theGuyFunction(game) {
+    this.animation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningswordLeft.png"), 180, 0, 90, 45, .2, 2, true, false);
+	this.idleAnimation = new Animation(ASSET_MANAGER.getAsset("./img/IDLE.png"), 180, 0, 90, 45, .2, 2, true, false);
+	this.Leftanimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningswordLeft.png"), 0, 0, 90, 45, .2, 2, false, false);
+    this.jumpAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 8, false, false);
     this.fallAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 8, true, false);
-	this.moveAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 8, true, false);
+	this.moveAnimation = new Animation(ASSET_MANAGER.getAsset("./img/Haru'unRunningsword2.png"), 180, 0, 90, 45, 0.2, 2, false, false);
     this.jumping = false;
     this.lives = 3;
     game.lives.innerHTML = "Lives: " + this.lives;
-	this.moving = false;
+	this.movingRight = false;
+	this.movingLeft = false;
     this.falling = false;
+	this.idle = false;
     this.boxes = true;
     this.lastY = this.y;
     this.platform = game.platforms[0];
-    this.jumpHeight = 200;
+    this.jumpHeight = 160;
 										//was 25                                            was 40                    was 20
     this.boundingbox = new BoundingBox(this.x , this.y, this.animation.frameWidth , this.animation.frameHeight );
 
-    Entity.call(this, game, 0, 400);
+    Entity.call(this, game, 0, 600);
 }
 
-Unicorn.prototype = new Entity();
-Unicorn.prototype.constructor = Unicorn;
+theGuyFunction.prototype = new Entity();
+theGuyFunction.prototype.constructor = theGuyFunction;
 
-Unicorn.prototype.reset = function () {
+theGuyFunction.prototype.reset = function () {
     this.jumping = false;
     this.falling = false;
     this.dead = false;
@@ -416,33 +477,50 @@ Unicorn.prototype.reset = function () {
     if (this.lives < 0) this.lives = 0;
     this.game.lives.innerHTML = "Lives: " + this.lives;
     this.x = 0;
-    this.y = 400;
+    this.y = 600;
     this.platform = this.game.platforms[0];
 										//was 25                                            was 40                    was 20
     this.boundingbox = new BoundingBox(this.x, this.y, this.animation.frameWidth, this.animation.frameHeight);
 }
 
-Unicorn.prototype.update = function () {
+theGuyFunction.prototype.update = function () {
     if (this.game.running) {
         if (this.dead) {
             this.game.reset();
             return;
         }
-		if(this.game.moving){
-			this.moving = true;
-			this.base = this.y;
+		if(this.game.movingRight){
+			this.movingRight = true;
+			//this.base = this.y;
 		}
-		if(this.moving){
-			console.log(this.moving);
+		if(this.movingRight){
+			console.log(this.movingRight);
 			console.log('right was recived');
+
 			
-			this.lastBottom = this.boundingbox.bottom;
+			//this.lastBottom = this.boundingbox.bottom;
   
             this.boundingbox = new BoundingBox(this.x, this.y , this.moveAnimation.frameWidth , this.moveAnimation.frameHeight  );
-			this.y = this.base;
-			this.x += 3 //* (this.game.clockTick / 10000 );
-			//this.moving = false;
-			this.base = 466;
+			//this.y = this.base;
+			this.x += 10//* (this.game.clockTick / 10000 );
+			//this.movingRight = false;
+			//this.base = this.y;
+		}
+		if(this.game.movingLeft){
+			this.movingLeft = true;
+			//this.base = this.y;
+		}
+		if(this.movingLeft){
+			console.log(this.movingLeft);
+			console.log('left was recived');
+			
+			//this.lastBottom = this.boundingbox.bottom;
+  
+            this.boundingbox = new BoundingBox(this.x, this.y , this.Leftanimation.frameWidth , this.Leftanimation.frameHeight  );
+			//this.y = this.base;
+			this.x -= 10//* (this.game.clockTick / 10000 );
+			//this.movingLeft = false;
+			//this.base = this.y;
 		}
         if (this.game.space && !this.jumping && !this.falling) {
             this.jumping = true;
@@ -450,14 +528,18 @@ Unicorn.prototype.update = function () {
         }
         if (this.jumping) {
             var height = 0;
+			var distance = 0;
             var duration = this.jumpAnimation.elapsedTime + this.game.clockTick;
             if (duration > this.jumpAnimation.totalTime / 2) duration = this.jumpAnimation.totalTime - duration;
             duration = duration / this.jumpAnimation.totalTime;
 
             // quadratic jump
             height = (4 * duration - 4 * duration * duration) * this.jumpHeight;
+			distance = (4 * duration - 4 * duration * duration) * this.jumpHeight;
             this.lastBottom = this.boundingbox.bottom;
             this.y = this.base - height;
+			this.x += distance/40;
+			
             this.boundingbox = new BoundingBox(this.x, this.y , this.jumpAnimation.frameWidth , this.jumpAnimation.frameHeight  );
 
             for (var i = 0; i < this.game.platforms.length; i++) {
@@ -493,9 +575,9 @@ Unicorn.prototype.update = function () {
         }
         for (var i = 0; i < this.game.platforms.length; i++) {
             var pf = this.game.platforms[i];
-            if (this.boundingbox.collide(pf.boundingbox)) {
-                this.dead = true;
-            }
+            //if (this.boundingbox.collide(pf.boundingbox)) {
+            //    this.dead = true;
+           // }
         }
         if (this.y > this.game.ctx.canvas.height) this.dead = true;
     }
@@ -503,24 +585,49 @@ Unicorn.prototype.update = function () {
 }
 
 
-Unicorn.prototype.draw = function (ctx) {
+theGuyFunction.prototype.draw = function (ctx) {
     if (this.dead || !this.game.running) return;
-	if(this.moving){
+	if(this.movingRight){
 		 if (this.boxes) {
             ctx.strokeStyle = "red";
-            ctx.strokeRect(this.x , this.y , this.jumpAnimation.frameWidth, this.jumpAnimation.frameHeight);
+            ctx.strokeRect(this.x , this.y , this.moveAnimation.frameWidth, this.moveAnimation.frameHeight);
             ctx.strokeStyle = "green";
             ctx.strokeRect(this.boundingbox.x , this.boundingbox.y , this.boundingbox.width , this.boundingbox.height );
 			
 		 }
 		                        console.log(this.x);
 		                        console.log(this.y);
+								console.log("Im in movingRight");
 		 this.moveAnimation.drawFrame(this.game.clockTick, ctx, this.x , this.y );
-		 this.moving = false;
+		 if (this.moveAnimation.isDone()) {
+            this.moveAnimation.elapsedTime = 0;
+		 this.movingRight = false;
+		 this.idle = false;
+		 }
+	}
+	if(this.movingLeft){
+		
+		 if (this.boxes) {
+            ctx.strokeStyle = "red";
+            ctx.strokeRect(this.x , this.y , this.Leftanimation.frameWidth, this.Leftanimation.frameHeight);
+            ctx.strokeStyle = "green";
+            ctx.strokeRect(this.boundingbox.x , this.boundingbox.y , this.boundingbox.width , this.boundingbox.height );
+			
+		 }
+		                        console.log(this.x);
+		                        console.log(this.y);
+								console.log("Im in movingLeft");
+		 this.Leftanimation.drawFrame(this.game.clockTick, ctx, this.x , this.y );
+		 if (this.Leftanimation.isDone()) {
+            this.Leftanimation.elapsedTime = 0;
+		 this.movingLeft = false;
+		 this.idle = false;
+		 }
 	}
     else if (this.jumping) {
 		                         console.log(this.x);
 		                         console.log(this.y);
+								 console.log("Im in jumping");
         if (this.boxes) {
             ctx.strokeStyle = "red";
             ctx.strokeRect(this.x , this.y , this.jumpAnimation.frameWidth, this.jumpAnimation.frameHeight );
@@ -541,17 +648,20 @@ Unicorn.prototype.draw = function (ctx) {
             ctx.strokeStyle = "green";
             ctx.strokeRect(this.boundingbox.x , this.boundingbox.y , this.boundingbox.width , this.boundingbox.height );
         }
+		console.log("Im in falling");
         this.fallAnimation.drawFrame(this.game.clockTick, ctx, this.x , this.y );
     }
 
-    else {
+    //else {
+		else if(!this.idle && !this.falling && !this.movingLeft && !this.movingRight && !this.jumping){
         if (this.boxes) {
             ctx.strokeStyle = "red";
-            ctx.strokeRect(this.x , this.y , this.jumpAnimation.frameWidth, this.jumpAnimation.frameHeight );
+            ctx.strokeRect(this.x , this.y , this.idleAnimation.frameWidth, this.idleAnimation.frameHeight );
             ctx.strokeStyle = "green";
             ctx.strokeRect(this.boundingbox.x , this.boundingbox.y , this.boundingbox.width , this.boundingbox.height );
         }
-        this.animation.drawFrame(this.game.clockTick, ctx, this.x, this.y );
+		console.log("Im in idle" + this.movingLeft + this.movingRight + this.falling + this.jumping);
+        this.idleAnimation.drawFrame(this.game.clockTick, ctx, this.x, this.y );
     }
 }
 
@@ -559,6 +669,10 @@ Unicorn.prototype.draw = function (ctx) {
 
 var ASSET_MANAGER = new AssetManager();
 ASSET_MANAGER.queueDownload("./img/Haru'unRunningsword2.png");
+ASSET_MANAGER.queueDownload("./img/Haru'unRunningswordLeft.png");
+ASSET_MANAGER.queueDownload("./img/IDLE.png");
+//-------------------------Done by Luka-----------------------------------------------------------
+ASSET_MANAGER.queueDownload("./img/TitleScreen.png");
 
 ASSET_MANAGER.downloadAll(function () {
     console.log("starting up da sheild");
@@ -568,27 +682,40 @@ ASSET_MANAGER.downloadAll(function () {
 
     var gameEngine = new GameEngine();
     var platforms = [];
-    var pf = new Platform(gameEngine, 0, 446, 1800, 100);
+    var pf = new Platform(gameEngine, 0, 700, 8000, 100);
     gameEngine.addEntity(pf);
     platforms.push(pf);
-    pf = new Platform(gameEngine, 300, 350, 600, 50);
+    pf = new Platform(gameEngine, 300, 600, 600, 50);
     gameEngine.addEntity(pf);
     platforms.push(pf);
-    pf = new Platform(gameEngine, 500, 200, 200, 50);
+    pf = new Platform(gameEngine, 500, 500, 200, 50);
     gameEngine.addEntity(pf);
     platforms.push(pf);
+	pf = new Platform(gameEngine, 800, 100, 200, 50);
+    gameEngine.addEntity(pf);
+    platforms.push(pf);
+	pf = new Platform(gameEngine, 1200, 200, 200, 50);
+    gameEngine.addEntity(pf);
+    platforms.push(pf);
+
 
     gameEngine.lives = lives;
     gameEngine.platforms = platforms;
     gameEngine.running = false;
 
-    var unicorn = new Unicorn(gameEngine);
+    var theGuy = new theGuyFunction(gameEngine);
     var pg = new PlayGame(gameEngine, 320, 350);
 
-    gameEngine.addEntity(unicorn);
+    gameEngine.addEntity(theGuy);
     gameEngine.addEntity(pg);
 
-    gameEngine.unicorn = unicorn;
+    gameEngine.theGuy = theGuy;
+	
+	//-------------------------Done by Luka-----------------------------------------------------------
+	var titleScreen = new TitleScreen(gameEngine);
+	gameEngine.titleScreen = titleScreen;
+	gameEngine.addEntity(titleScreen);
+	
 
     gameEngine.init(ctx);
     gameEngine.start();
