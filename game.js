@@ -480,7 +480,7 @@ function theGuyFunction(game) {
     this.boxes = true;
     this.lastY = this.y;
     this.platform = game.platforms[0];
-    this.jumpHeight = 160;
+    this.jumpHeight = 80;
 										//was 25                                            was 40                    was 20
     this.boundingbox = new BoundingBox(this.x , this.y, this.animation.frameWidth , this.animation.frameHeight );
 
@@ -713,18 +713,21 @@ ASSET_MANAGER.downloadAll(function () {
     var pf = new Platform(gameEngine, 0, 647, 905, 10);
     gameEngine.addEntity(pf);
     platforms.push(pf);
-  /*   pf = new Platform(gameEngine, 300, 600, 800, 50);
+    pf = new Platform(gameEngine, 87, 447, 93, 20);
     gameEngine.addEntity(pf);
     platforms.push(pf);
-    pf = new Platform(gameEngine, 500, 500, 200, 50);
+    pf = new Platform(gameEngine, 229, 598, 120, 15);
     gameEngine.addEntity(pf);
     platforms.push(pf);
-	pf = new Platform(gameEngine, 800, 100, 200, 50);
+	pf = new Platform(gameEngine, 358, 555, 109, 16);
     gameEngine.addEntity(pf);
     platforms.push(pf);
-	pf = new Platform(gameEngine, 1200, 200, 200, 50);
+ 	pf = new Platform(gameEngine, 297, 494, 54, 17);
     gameEngine.addEntity(pf);
-    platforms.push(pf); */
+    platforms.push(pf); 
+	pf = new Platform(gameEngine, 215, 470, 52, 17);
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
 
 
     gameEngine.lives = lives;
