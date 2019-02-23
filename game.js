@@ -138,6 +138,7 @@ function GameEngine() {
 	
 	//-------------------------Done by Luka-----------------------------------------------------------
 	this.titleScreen = null;
+	this.background = null;
 }
 
 GameEngine.prototype.init = function (ctx) {
@@ -376,6 +377,26 @@ PlayGame.prototype.draw = function (ctx) {
     }
 }
 
+function background(game){
+	Entity.call(this, game, 0,0);
+	
+	
+}
+
+background.prototype = new Entity();
+background.prototype.constructor = background;
+background.prototype.draw = function(ctx){
+	
+	if(this.game.running){
+	ctx.drawImage(ASSET_MANAGER.getAsset("./img/level.png"), 0, 0)
+	
+	}
+
+}
+
+background.prototype.update = function(){
+	
+}
 
 function TitleScreen(game) {
 	Entity.call(this, game, 0, 0);
@@ -429,7 +450,7 @@ Platform.prototype.draw = function (ctx) {
 
     grad = ctx.createLinearGradient(0, this.y, 0, this.y + this.height);
     grad.addColorStop(0, 'black');
-	grad.addColorStop(1/2, 'gray');
+	//grad.addColorStop(1/2, 'gray');
     /* grad.addColorStop(1 / 6, 'orange');
     grad.addColorStop(2 / 6, 'yellow');
     grad.addColorStop(3 / 6, 'green')
@@ -502,7 +523,7 @@ theGuyFunction.prototype.update = function () {
   
             this.boundingbox = new BoundingBox(this.x, this.y , this.moveAnimation.frameWidth , this.moveAnimation.frameHeight  );
 			//this.y = this.base;
-			this.x += 10//* (this.game.clockTick / 10000 );
+			this.x += 3//* (this.game.clockTick / 10000 );
 			//this.movingRight = false;
 			//this.base = this.y;
 		}
@@ -518,7 +539,7 @@ theGuyFunction.prototype.update = function () {
   
             this.boundingbox = new BoundingBox(this.x, this.y , this.Leftanimation.frameWidth , this.Leftanimation.frameHeight  );
 			//this.y = this.base;
-			this.x -= 10//* (this.game.clockTick / 10000 );
+			this.x -= 3//* (this.game.clockTick / 10000 );
 			//this.movingLeft = false;
 			//this.base = this.y;
 		}
@@ -535,10 +556,10 @@ theGuyFunction.prototype.update = function () {
 
             // quadratic jump
             height = (4 * duration - 4 * duration * duration) * this.jumpHeight;
-			distance = (4 * duration - 4 * duration * duration) * this.jumpHeight;
+			//distance = (1 * duration - 1 * duration * duration) * this.jumpHeight;
             this.lastBottom = this.boundingbox.bottom;
             this.y = this.base - height;
-			this.x += distance/40;
+			//this.x += distance;
 			
             this.boundingbox = new BoundingBox(this.x, this.y , this.jumpAnimation.frameWidth , this.jumpAnimation.frameHeight  );
 
@@ -671,21 +692,28 @@ var ASSET_MANAGER = new AssetManager();
 ASSET_MANAGER.queueDownload("./img/Haru'unRunningsword2.png");
 ASSET_MANAGER.queueDownload("./img/Haru'unRunningswordLeft.png");
 ASSET_MANAGER.queueDownload("./img/IDLE.png");
+ASSET_MANAGER.queueDownload("./img/level.png");
 //-------------------------Done by Luka-----------------------------------------------------------
 ASSET_MANAGER.queueDownload("./img/TitleScreen.png");
+
 
 ASSET_MANAGER.downloadAll(function () {
     console.log("starting up da sheild");
     var canvas = document.getElementById('gameWorld');
     var lives = document.getElementById('lives');
     var ctx = canvas.getContext('2d');
-
+	
     var gameEngine = new GameEngine();
+	
+	var theBackGround = new background(gameEngine);
+	gameEngine.background = theBackGround;
+	gameEngine.addEntity(theBackGround);
+	
     var platforms = [];
-    var pf = new Platform(gameEngine, 0, 700, 8000, 100);
+    var pf = new Platform(gameEngine, 0, 647, 905, 10);
     gameEngine.addEntity(pf);
     platforms.push(pf);
-    pf = new Platform(gameEngine, 300, 600, 600, 50);
+  /*   pf = new Platform(gameEngine, 300, 600, 800, 50);
     gameEngine.addEntity(pf);
     platforms.push(pf);
     pf = new Platform(gameEngine, 500, 500, 200, 50);
@@ -696,7 +724,7 @@ ASSET_MANAGER.downloadAll(function () {
     platforms.push(pf);
 	pf = new Platform(gameEngine, 1200, 200, 200, 50);
     gameEngine.addEntity(pf);
-    platforms.push(pf);
+    platforms.push(pf); */
 
 
     gameEngine.lives = lives;
@@ -710,6 +738,10 @@ ASSET_MANAGER.downloadAll(function () {
     gameEngine.addEntity(pg);
 
     gameEngine.theGuy = theGuy;
+	
+/* 	var theBackGround = new background(gameEngine);
+	gameEngine.background = theBackGround;
+	gameEngine.addEntity(theBackGround); */
 	
 	//-------------------------Done by Luka-----------------------------------------------------------
 	var titleScreen = new TitleScreen(gameEngine);
