@@ -449,7 +449,7 @@ Platform.prototype.draw = function (ctx) {
     var offset = 0;
 
     grad = ctx.createLinearGradient(0, this.y, 0, this.y + this.height);
-   // grad.addColorStop(0, 'black');
+    //grad.addColorStop(0, 'black');
 	//grad.addColorStop(1/2, 'gray');
     /* grad.addColorStop(1 / 6, 'orange');
     grad.addColorStop(2 / 6, 'yellow');
@@ -709,7 +709,7 @@ ASSET_MANAGER.downloadAll(function () {
 	gameEngine.background = theBackGround;
 	gameEngine.addEntity(theBackGround);
 	
-    var platforms = [];
+        var platforms = [];
     var pf = new Platform(gameEngine, 0, 647, 905, 10);
     gameEngine.addEntity(pf);
     platforms.push(pf);
@@ -728,7 +728,10 @@ ASSET_MANAGER.downloadAll(function () {
 	pf = new Platform(gameEngine, 215, 470, 52, 17);
     gameEngine.addEntity(pf);
     platforms.push(pf); 
-	
+	///////////////////////////// Moneer Marouf/////////////////////////////////
+	/*
+		platforms to stand on
+	*/
 	pf = new Platform(gameEngine, 91, 409, 40, 8);
     gameEngine.addEntity(pf);
     platforms.push(pf); 
@@ -828,6 +831,9 @@ ASSET_MANAGER.downloadAll(function () {
 	pf = new Platform(gameEngine,1154 ,370 ,94 ,14 );
     gameEngine.addEntity(pf);
     platforms.push(pf); 
+	pf = new Platform(gameEngine,1154 ,255 ,94 ,10 );
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
 	pf = new Platform(gameEngine,1210 ,424 ,41 ,10 );
     gameEngine.addEntity(pf);
     platforms.push(pf); 
@@ -843,7 +849,33 @@ ASSET_MANAGER.downloadAll(function () {
 	pf = new Platform(gameEngine,1256 ,648 ,1144 ,20 );
     gameEngine.addEntity(pf);
     platforms.push(pf); 
-
+	/*
+		Walls
+	*/
+	pf = new Platform(gameEngine,532 ,204 ,33 ,380 );
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
+	pf = new Platform(gameEngine,529 ,487 ,20 ,161 );
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
+	pf = new Platform(gameEngine,602 ,200 ,47 ,167 );
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
+	pf = new Platform(gameEngine,612 ,528 ,35 ,70 );
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
+	pf = new Platform(gameEngine,1135 ,207 ,13 ,313 );
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
+	pf = new Platform(gameEngine,1135 ,524 ,12 ,118 );
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
+	pf = new Platform(gameEngine,1254 ,207 ,13 ,313 );
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
+	pf = new Platform(gameEngine,1256 ,523 ,13 ,18 );
+    gameEngine.addEntity(pf);
+    platforms.push(pf); 
 
 
     gameEngine.lives = lives;
